@@ -106,6 +106,14 @@ function check(name, ok, extra) {
   check("信号灯渲染", AR.querySelectorAll(".light").length >= 6, "实际 " + AR.querySelectorAll(".light").length);
   check("URL 占位 = 0", AR.querySelectorAll(".url-ph").length === 0, "实际 " + AR.querySelectorAll(".url-ph").length);
   check("文末微信互动卡", /wozz8888/.test((AR.querySelector(".end-feedback") || {}).textContent || ""));
+  check("留言区存在", AR.querySelectorAll("#comments").length === 1);
+  check("留言区标题", /留言讨论/.test((AR.querySelector(".comments-title") || {}).textContent || ""));
+  check("留言区 GitHub 说明", /GitHub Issues/.test((AR.querySelector(".comments-head p") || {}).textContent || ""));
+  const utt = AR.querySelector('#commentsBody script[src*="utteranc.es"]');
+  check("Utterances 脚本已挂载", !!utt);
+  check("utteranc repo 正确", utt && utt.getAttribute("repo") === "zhangguoyue1/LifeChoices", utt && utt.getAttribute("repo"));
+  check("utteranc issue-term=url", utt && utt.getAttribute("issue-term") === "url", utt && utt.getAttribute("issue-term"));
+  check("留言区微信兜底", /wozz8888/.test((AR.querySelector(".comments-foot") || {}).textContent || ""));
   check("侧栏当前篇高亮", ad.querySelectorAll("#sideNav .snav a.active").length === 1, "实际 " + ad.querySelectorAll("#sideNav .snav a.active").length);
   check("元数据块存在", /主题词：转行/.test((AR.querySelector(".page-meta") || {}).textContent || ""));
   check("无容器指令残留", !/:::[a-z]/.test(AR.querySelector(".md").textContent));

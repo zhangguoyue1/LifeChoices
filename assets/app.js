@@ -483,7 +483,34 @@
       '<div class="end-feedback"><h4>提问 · 纠错 · 投稿</h4>' +
       "<p>读完这篇，如果你有真实抉择经历、发现某条证据过时，或认为框架漏了关键变量——微信告诉编辑。" +
       "有价值的问题与纠错会被选择性纳入本篇下一版本，默认匿名。</p>" +
-      '<button class="wx-copy" data-copy="wozz8888">复制编辑微信 <b>wozz8888</b></button></div>';
+      '<button class="wx-copy" data-copy="wozz8888">复制编辑微信 <b>wozz8888</b></button></div>' +
+      '<section class="comments" id="comments">' +
+      '<div class="comments-head">' +
+      '<div class="comments-title">留言讨论<span class="comments-badge">GitHub 登录即可留言</span></div>' +
+      "<p>留言通过 GitHub Issues 公开存储，只显示你的 GitHub 昵称与头像，不公开邮箱。" +
+      "加载异常或没有 GitHub 账号？直接加编辑微信 <b>wozz8888</b> 提问——被采纳的问题与纠错会匿名纳入下一版本。</p>" +
+      "</div>" +
+      '<div class="comments-body" id="commentsBody"></div>' +
+      '<div class="comments-foot">' +
+      '<span>也可以</span><button class="wx-copy" data-copy="wozz8888">复制微信 <b>wozz8888</b></button><span>私下提问</span>' +
+      "</div>" +
+      "</section>";
+  }
+
+  /* Utterances 留言组件：基于 GitHub Issues，issue-term=url 使每个 ?q= 专题独立成帖 */
+  function mountComments() {
+    var host = document.getElementById("commentsBody");
+    if (!host) return;
+    host.innerHTML = "";
+    var s = document.createElement("script");
+    s.src = "https://utteranc.es/client.js";
+    s.setAttribute("repo", "zhangguoyue1/LifeChoices");
+    s.setAttribute("issue-term", "url");
+    s.setAttribute("label", "留言");
+    s.setAttribute("theme", "github-light");
+    s.setAttribute("crossorigin", "anonymous");
+    s.async = true;
+    host.appendChild(s);
   }
 
   function showState(html) {
@@ -515,6 +542,7 @@
             host.style.display = "block";
             document.title = (meta.title || "人生抉择") + " · 人生抉择参考手册";
             bindCopy(); bindTasks(); bindRefs(); bindToTop();
+            mountComments();
             if (sec) {
               var el = document.getElementById(/^\d+$/.test(sec) ? "sec-" + sec : sec);
               if (el) setTimeout(function () { el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);

@@ -889,6 +889,57 @@ a.ref.flash { background: var(--accent); color: #fff; }
   color: var(--ink-2);
 }
 
+/* 留言讨论区（Utterances） */
+.comments {
+  margin: 40px 0 0;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-sans);
+}
+.comments-head { margin-bottom: 18px; }
+.comments-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  letter-spacing: .18em;
+  color: var(--accent);
+  font-weight: 600;
+}
+.comments-badge {
+  font-size: 11px;
+  letter-spacing: .06em;
+  font-weight: 500;
+  color: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: var(--paper-2);
+}
+.comments-head p {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--ink-2);
+}
+.comments-head p b { color: var(--accent); font-weight: 600; }
+.comments-body {
+  min-height: 120px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  overflow: hidden;
+}
+.comments-body iframe { display: block; width: 100%; border: none; }
+.comments-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
 /* 页尾元数据 */
 .page-meta {
   margin: 26px 0 0;
@@ -1001,7 +1052,7 @@ a.ref.flash { background: var(--accent); color: #fff; }
 }
 
 @media print {
-  .sidebar, .topbar, .totop, .copy-btn, .wx-copy, .wx-bar, .end-feedback, .side-mask { display: none; }
+  .sidebar, .topbar, .totop, .copy-btn, .wx-copy, .wx-bar, .end-feedback, .comments, .side-mask { display: none; }
   body { background: #fff; }
   a.ref { background: none; }
 }
