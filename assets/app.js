@@ -82,9 +82,6 @@
       return '<a class="ref" href="#' + id.toLowerCase() + '" data-ref="' + id + '">' + id + '</a>';
     });
 
-    // {{URL}} 占位
-    text = text.replace(/\{\{URL\}\}/g, '<span class="url-ph">{{URL}}</span>');
-
     // 普通链接
     text = text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, t, u) {
       var ext = /^https?:/i.test(u);
@@ -288,7 +285,7 @@
     if (type === "case") return renderCase(args, content);
     if (type === "check") return renderCheck(args, content);
     if (type === "refs") return renderRefs(content);
-    if (type === "cross") return '<div class="crossnav"><h3>跨站跳转</h3>' + renderMarkdown(content).html + "</div>";
+    if (type === "cross") return ""; // 跨站跳转已下线，旧文残留标记直接忽略
     if (type === "meta") return '<div class="page-meta"><b>本页元数据</b>' + inline(content.replace(/\n+/g, " ")) + "</div>";
     if (type === "note") return '<div class="warning"><b>' + esc(args || "提示") + "</b>" + inline(content.replace(/\n+/g, " ")) + "</div>";
     // 未知容器降级为普通引用
@@ -356,10 +353,10 @@
       var rest2 = [];
       rest.forEach(function (seg) {
         if (/^(strong|weak|辅助|强|弱)$/i.test(seg)) { strength = seg; return; }
-        if (/^\{\{URL\}\}$/.test(seg) || /^https?:\/\//i.test(seg)) { if (!url) { url = seg; return; } }
+        if (/^\{\{URL\}\}$/.test(seg)) return;               // 占位符：直接丢弃，不渲染
+        if (/^https?:\/\//i.test(seg)) { if (!url) { url = seg; return; } }
         rest2.push(seg);
       });
-      if (!url) url = "{{URL}}";
 
       var type = rest2[0] || "";
       var title = rest2[1] || "";
@@ -372,9 +369,10 @@
       }
 
       var strong = /strong|^强$/i.test(strength);
-      var urlHtml = /^\{\{URL\}\}$/.test(url)
-        ? '<span class="rlink url-ph">{{URL}}</span>'
-        : '<a class="rlink" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + "</a>";
+      // 只有真实可访问的链接才渲染；否则不显示任何 URL 元素
+      var urlHtml = url
+        ? '<a class="rlink" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + "</a>"
+        : "";
 
       return '<li id="' + id.toLowerCase() + '">' +
         '<span class="rid">' + id + "</span>" +
@@ -391,7 +389,7 @@
   /* ---------------- 交互 ---------------- */
 
   function bindCopy() {
-    document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    document.querySelectorAll(".copy-btn, .wx-copy").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var text = btn.getAttribute("data-copy") || "";
         var done = function () {
@@ -481,7 +479,11 @@
       '<div class="warning"><b>前置声明</b>本内容仅为决策思考工具，不构成法律、医疗、金融、婚恋最终决策；高不可逆事项建议配套专业人士咨询。文中不提供"选 A 还是选 B"的结论，只交付框架、清单与成本核算方法。</div>' +
       tocHtml +
       "</header>" +
-      '<div class="md">' + html + "</div>";
+      '<div class="md">' + html + "</div>" +
+      '<div class="end-feedback"><h4>提问 · 纠错 · 投稿</h4>' +
+      "<p>读完这篇，如果你有真实抉择经历、发现某条证据过时，或认为框架漏了关键变量——微信告诉编辑。" +
+      "有价值的问题与纠错会被选择性纳入本篇下一版本，默认匿名。</p>" +
+      '<button class="wx-copy" data-copy="wozz8888">复制编辑微信 <b>wozz8888</b></button></div>';
   }
 
   function showState(html) {
@@ -491,17 +493,14 @@
     host.style.display = "block";
   }
 
-  function loadArticle(q, sec) {
-    fetch(BASE + "data/index.json", { cache: "no-cache" })
-      .then(function (r) { return r.json(); })
-      .then(function (idx) {
-        var hit = (idx.items || []).filter(function (it) { return it.q === q || it.slug === q; })[0];
-        if (!hit) {
-          showState("<b>暂无该专题</b>「" + esc(q) + "」还没有入库。<br>可回到首页查看已发布目录。" +
-            '<br><a href="' + BASE + '">返回首页</a>');
-          return;
-        }
-        return fetch(BASE + "data/" + hit.slug + ".md", { cache: "no-cache" })
+  function loadArticle(idx, q, sec) {
+    var hit = (idx.items || []).filter(function (it) { return it.q === q || it.slug === q; })[0];
+    if (!hit) {
+      showState("<b>暂无该专题</b>「" + esc(q) + "」还没有入库。<br>可回到首页查看已发布目录。" +
+        '<br><a href="' + BASE + '">返回首页</a>');
+      return;
+    }
+    fetch(BASE + "data/" + hit.slug + ".md", { cache: "no-cache" })
           .then(function (r) {
             if (!r.ok) throw new Error("404");
             return r.text();
@@ -520,58 +519,164 @@
               var el = document.getElementById(/^\d+$/.test(sec) ? "sec-" + sec : sec);
               if (el) setTimeout(function () { el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
             }
-          });
-      })
-      .catch(function (e) {
-        showState("<b>加载失败</b>本地直接双击打开时，浏览器会拦截文件读取。<br>" +
-          "请用本地服务预览：在 LifeChoices 目录执行 <code>python -m http.server 8000</code>，" +
-          "再访问 <code>http://localhost:8000/?q=" + encodeURIComponent(q) + "</code>；" +
-          "或直接部署到 GitHub Pages。<br><a href=\"" + BASE + "\">返回首页</a>");
+          })
+    .catch(function () {
+      showState("<b>加载失败</b>本地直接双击打开时，浏览器会拦截文件读取。<br>" +
+        "请用本地服务预览：在 LifeChoices 目录执行 <code>python -m http.server 8000</code>，" +
+        "再访问 <code>http://localhost:8000/?q=" + encodeURIComponent(q) + "</code>；" +
+        "或直接部署到 GitHub Pages。<br><a href=\"" + BASE + "\">返回首页</a>");
+    });
+  }
+
+  /* ---------------- 侧边栏：章节导航 + 筛选 ---------------- */
+
+  var state = { idx: null, filter: { risk: "all", cat: "all" }, currentQ: "" };
+
+  function riskCls(risk) {
+    return /高/.test(risk || "") ? "high" : /半/.test(risk || "") ? "half" : "low";
+  }
+
+  function itemLink(it, no) {
+    var cls = riskCls(it.risk);
+    var planned = it.status === "planned";
+    return '<li><a href="' + BASE + "?q=" + encodeURIComponent(it.q) + '"' +
+      (state.currentQ === it.q ? ' class="active"' : "") + '>' +
+      '<span class="no">' + String(no).padStart(2, "0") + "</span>" +
+      '<span class="t">' + esc(it.title) + (planned ? "（筹备中）" : "") + "</span>" +
+      '<span class="dot ' + cls + '" title="不可逆等级：' + esc(it.risk || "—") + '"></span>' +
+      '<span class="chev">&gt;</span>' +
+      "</a></li>";
+  }
+
+  function visibleItems() {
+    var f = state.filter;
+    return (state.idx.items || []).filter(function (it) {
+      if (f.risk !== "all" && (it.risk || "").indexOf(f.risk) < 0) return false;
+      if (f.cat !== "all" && it.category !== f.cat) return false;
+      return true;
+    });
+  }
+
+  function applyFilter() {
+    var idx = state.idx;
+    if (!idx) return;
+    var items = idx.items || [];
+    var cats = idx.categories || [];
+    var vis = visibleItems();
+    var f = state.filter;
+
+    var count = document.getElementById("sideCount");
+    if (count) count.textContent = f.risk === "all" && f.cat === "all"
+      ? "共 " + items.length + " 篇"
+      : vis.length + " / " + items.length;
+
+    // 侧栏章节列表
+    var host = document.getElementById("sideNav");
+    if (host) {
+      var html = "";
+      cats.forEach(function (c) {
+        if (f.cat !== "all" && c.key !== f.cat) return;
+        var list = vis.filter(function (it) { return it.category === c.key; });
+        if (!list.length) return;
+        html += '<div class="scat"><div class="scat-name">' + esc(c.key) + " · " + list.length + "</div>" +
+          '<ul class="snav">' + list.map(function (it) {
+            return itemLink(it, items.indexOf(it) + 1);
+          }).join("") + "</ul></div>";
       });
+      host.innerHTML = html || '<div class="snav-empty">该筛选组合下暂无专题，试试放宽条件。</div>';
+    }
+
+    // 首页目录联动
+    var grid = document.getElementById("catGrid");
+    if (grid && document.getElementById("home").style.display !== "none") {
+      grid.innerHTML = cats.map(function (c) {
+        if (f.cat !== "all" && c.key !== f.cat) return "";
+        var list = vis.filter(function (it) { return it.category === c.key; });
+        if (!list.length) return "";
+        return '<div class="cat"><h3>' + esc(c.key) + "</h3><ul>" + list.map(function (it) {
+          var cls = riskCls(it.risk);
+          var planned = it.status === "planned"
+            ? '<span class="risk planned">筹备中</span>' : "";
+          return '<li><a href="' + BASE + "?q=" + encodeURIComponent(it.q) + '">' + esc(it.title) + "</a>" + planned +
+            '<span class="risk ' + cls + '">' + esc(it.risk || "") + "</span></li>";
+        }).join("") + "</ul></div>";
+      }).join("") || '<div class="cat" style="grid-column:1/-1;color:var(--ink-3);font-size:14px">该筛选组合下暂无专题。</div>';
+    }
+  }
+
+  function bindChips() {
+    document.querySelectorAll("#riskChips .chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        document.querySelectorAll("#riskChips .chip").forEach(function (c) { c.classList.remove("active"); });
+        chip.classList.add("active");
+        state.filter.risk = chip.getAttribute("data-risk") || "all";
+        applyFilter();
+      });
+    });
+    document.querySelectorAll("#catChips .chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        document.querySelectorAll("#catChips .chip").forEach(function (c) { c.classList.remove("active"); });
+        chip.classList.add("active");
+        state.filter.cat = chip.getAttribute("data-cat") || "all";
+        applyFilter();
+      });
+    });
+  }
+
+  function bindMenu() {
+    var btn = document.getElementById("menuBtn");
+    var side = document.getElementById("sidebar");
+    var mask = document.getElementById("sideMask");
+    if (!btn || !side) return;
+    function close() { side.classList.remove("open"); if (mask) mask.classList.remove("show"); }
+    btn.addEventListener("click", function () {
+      side.classList.toggle("open");
+      if (mask) mask.classList.toggle("show");
+    });
+    if (mask) mask.addEventListener("click", close);
+    side.addEventListener("click", function (e) {
+      if (e.target.closest && e.target.closest("a")) close();
+    });
   }
 
   function loadHome() {
-    var grid = document.getElementById("catGrid");
-    if (!grid) return;
-    fetch(BASE + "data/index.json", { cache: "no-cache" })
-      .then(function (r) { return r.json(); })
-      .then(function (idx) {
-        var cats = idx.categories || [];
-        var items = idx.items || [];
-        grid.innerHTML = cats.map(function (c) {
-          var list = items.filter(function (it) { return it.category === c.key; });
-          if (!list.length) return "";
-          return "<div class=\"cat\"><h3>" + esc(c.key) + "</h3><ul>" + list.map(function (it) {
-            var cls = /高/.test(it.risk || "") ? "high" : /半/.test(it.risk || "") ? "half" : "low";
-            return '<li><a href="' + BASE + "?q=" + encodeURIComponent(it.q) + '">' + esc(it.title) + "</a>" +
-              (it.status === "planned" ? '<span class="risk planned">筹备中</span>' : "") +
-              '<span class="risk ' + cls + '">' + esc(it.risk || "") + "</span></li>";
-          }).join("") + "</ul></div>";
-        }).join("");
-      })
-      .catch(function () {
-        grid.innerHTML = '<div class="cat" style="grid-column:1/-1">目录读取失败：请在本地起服务或用 Pages 打开。</div>';
-      });
+    applyFilter();
+    bindToTop();
   }
 
   function init() {
     var params = new URLSearchParams(location.search);
     var q = params.get("q");
     var sec = params.get("sec");
+    state.currentQ = q || "";
 
     document.querySelectorAll("[data-year]").forEach(function (el) {
       el.textContent = new Date().getFullYear();
     });
 
-    if (q) {
-      document.getElementById("home").style.display = "none";
-      loadArticle(q, sec);
-    } else {
-      document.getElementById("article").style.display = "none";
-      loadHome();
-      bindRefs();
-      bindToTop();
-    }
+    bindChips();
+    bindMenu();
+    bindCopy();
+
+    fetch(BASE + "data/index.json", { cache: "no-cache" })
+      .then(function (r) { return r.json(); })
+      .then(function (idx) {
+        state.idx = idx;
+        applyFilter();
+        if (q) {
+          document.getElementById("home").style.display = "none";
+          loadArticle(idx, q, sec);
+        } else {
+          document.getElementById("article").style.display = "none";
+          document.title = "人生抉择参考手册 · 只交付工具，不替你拍板";
+          bindToTop();
+        }
+      })
+      .catch(function () {
+        var grid = document.getElementById("catGrid");
+        if (grid) grid.innerHTML = '<div class="cat" style="grid-column:1/-1">目录读取失败：请在本地起服务或用 Pages 打开。</div>';
+        if (q) loadArticle({ items: [] }, q, sec);
+      });
   }
 
   // Node 环境：导出渲染函数用于离线自检

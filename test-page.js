@@ -41,8 +41,40 @@ function check(name, ok, extra) {
   check("目录分组 = 4", hd.querySelectorAll("#catGrid .cat").length === 4, "实际 " + hd.querySelectorAll("#catGrid .cat").length);
   check("首页工具卡 = 4", hd.querySelectorAll(".tool-card").length === 4);
   check("首页 REF 锚点可解析", hd.querySelectorAll("#ref-101").length === 1);
-  check("互通跳转存在", /HowToLiveBetter/.test(hd.querySelector(".crossnav").innerHTML));
+
+  // 侧边栏
+  check("侧栏章节项 = 12", hd.querySelectorAll("#sideNav .snav li").length === 12, "实际 " + hd.querySelectorAll("#sideNav .snav li").length);
+  check("侧栏分组 = 4", hd.querySelectorAll("#sideNav .scat").length === 4, "实际 " + hd.querySelectorAll("#sideNav .scat").length);
+  check("侧栏计数文案", /共 12 篇/.test((hd.getElementById("sideCount") || {}).textContent || ""));
+  check("侧栏箭头存在", hd.querySelectorAll("#sideNav .chev").length === 12);
+  check("侧栏等级圆点", hd.querySelectorAll("#sideNav .dot").length === 12);
+  check("顶栏无样板链接", !/要不要转行/.test(hd.querySelector(".topnav").innerHTML));
+
+  // 筛选联动：点「高不可逆」chip
+  const riskChip = hd.querySelector('#riskChips .chip[data-risk="高不可逆"]');
+  riskChip.dispatchEvent(new home.window.MouseEvent("click", { bubbles: true }));
+  await wait(120);
+  const visAfterRisk = hd.querySelectorAll("#sideNav .snav li").length;
+  const expectedHigh = Array.from(hd.querySelectorAll("#catGrid .risk.high, #catGrid .risk.half, #catGrid .risk.low"))
+    .filter((s) => s.classList.contains("high")).length;
+  check("筛选「高不可逆」后侧栏收窄", visAfterRisk < 12 && visAfterRisk === expectedHigh, "侧栏 " + visAfterRisk + " / 首页高不可逆 " + expectedHigh);
+  check("筛选计数切换", /\/ 12/.test((hd.getElementById("sideCount") || {}).textContent || ""), (hd.getElementById("sideCount") || {}).textContent);
+  // 复位
+  hd.querySelector('#riskChips .chip[data-risk="all"]').dispatchEvent(new home.window.MouseEvent("click", { bubbles: true }));
+  await wait(120);
+  check("复位后恢复 12 篇", hd.querySelectorAll("#sideNav .snav li").length === 12);
+
+  // 分类筛选：点「健康取舍」
+  hd.querySelector('#catChips .chip[data-cat="健康取舍抉择"]').dispatchEvent(new home.window.MouseEvent("click", { bubbles: true }));
+  await wait(120);
+  check("分类筛选后仅剩 1 篇", hd.querySelectorAll("#sideNav .snav li").length === 1, "实际 " + hd.querySelectorAll("#sideNav .snav li").length);
+  hd.querySelector('#catChips .chip[data-cat="all"]').dispatchEvent(new home.window.MouseEvent("click", { bubbles: true }));
+  await wait(120);
+
+  check("微信互动条存在", /wozz8888/.test(hd.querySelector(".wx-bar").textContent));
+  check("侧栏微信复制钮", /wozz8888/.test(hd.querySelector(".side-foot .wx-copy").getAttribute("data-copy") || ""));
   check("页脚年份已填", hd.querySelector("[data-year]").textContent === String(new Date().getFullYear()));
+  check("无旧站广告", !/HowToLiveBetter|高性价比/.test(hd.body.innerHTML));
 
   /* ---------- 专题页 ---------- */
   console.log("\n[专题页 ?q=转行]");
@@ -57,8 +89,8 @@ function check(name, ok, extra) {
   check("摘要非空", (AR.querySelector(".article-summary") || {}).textContent.length > 10);
   check("前置声明存在", /不构成法律/.test((AR.querySelector(".warning") || {}).textContent || ""));
   check("徽章 = 3+tags", AR.querySelectorAll(".badge").length === 6, "实际 " + AR.querySelectorAll(".badge").length);
-  check("TOC = 11", AR.querySelectorAll(".toc li").length === 11, "实际 " + AR.querySelectorAll(".toc li").length);
-  check("正文 h2 = 11", AR.querySelectorAll(".md h2").length === 11);
+  check("TOC = 10", AR.querySelectorAll(".toc li").length === 10, "实际 " + AR.querySelectorAll(".toc li").length);
+  check("正文 h2 = 10", AR.querySelectorAll(".md h2").length === 10);
   check("h2 自动编号", /01/.test((AR.querySelector(".md h2 .h2num") || {}).textContent || ""));
   check("io 卡片 ≥ 8", AR.querySelectorAll(".md .io").length >= 8, "实际 " + AR.querySelectorAll(".md .io").length);
   check("check 清单 = 3", AR.querySelectorAll(".md .checklist").length === 3, "实际 " + AR.querySelectorAll(".md .checklist").length);
@@ -72,11 +104,13 @@ function check(name, ok, extra) {
     return !!ad.getElementById(id);
   }));
   check("信号灯渲染", AR.querySelectorAll(".light").length >= 6, "实际 " + AR.querySelectorAll(".light").length);
-  check("URL 占位 = 12", AR.querySelectorAll(".url-ph").length === 12, "实际 " + AR.querySelectorAll(".url-ph").length);
-  check("跨站跳转链接", AR.querySelectorAll(".md .crossnav a").length === 6, "实际 " + AR.querySelectorAll(".md .crossnav a").length);
+  check("URL 占位 = 0", AR.querySelectorAll(".url-ph").length === 0, "实际 " + AR.querySelectorAll(".url-ph").length);
+  check("文末微信互动卡", /wozz8888/.test((AR.querySelector(".end-feedback") || {}).textContent || ""));
+  check("侧栏当前篇高亮", ad.querySelectorAll("#sideNav .snav a.active").length === 1, "实际 " + ad.querySelectorAll("#sideNav .snav a.active").length);
   check("元数据块存在", /主题词：转行/.test((AR.querySelector(".page-meta") || {}).textContent || ""));
   check("无容器指令残留", !/:::[a-z]/.test(AR.querySelector(".md").textContent));
   check("无 HTML 源码泄漏", !/<span|<\/span>/.test(AR.querySelector(".md").textContent), AR.querySelector(".md").textContent.match(/.{0,20}<span.{0,30}/));
+  check("无旧站引用", !/HowToLiveBetter|高性价比/.test(AR.textContent));
   check("页面 title 已更新", ad.title === "要不要转行 · 人生抉择参考手册", ad.title);
 
   /* ---------- 未知主题 ---------- */

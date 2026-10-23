@@ -4,7 +4,6 @@ title: 要不要离婚
 summary: 先把情绪判断与法律后果彻底分开评估，再核算冷静期、财产分割、子女抚养与家务补偿这四个机制的真实规则。
 risk_level: 高不可逆
 cooling_period: 90
-related_original: HowToLiveBetter/?q=亲密关系&sec=1
 refs: ["REF-001", "REF-002", "REF-003", "REF-004", "REF-005", "REF-006", "REF-007", "REF-008", "REF-009", "REF-010", "REF-011", "REF-012"]
 tags: ["亲密关系", "离婚制度", "财产分割", "子女抚养", "风险核算"]
 ---
@@ -398,31 +397,20 @@ tags: ["亲密关系", "离婚制度", "财产分割", "子女抚养", "风险�
 ## 参考资料与证据索引
 
 :::refs
-[REF-001]｜官方法规｜《中华人民共和国民法典》第一千零七十七条：协议离婚自婚姻登记机关收到申请之日起三十日内为冷静期，期满后双方共同申请发给离婚证｜全国人民代表大会｜2020｜{{URL}}｜strong
-[REF-002]｜官方法规｜《中华人民共和国民法典》第一千零七十九条：夫妻一方要求离婚的，可由有关组织调解或直接向人民法院提起离婚诉讼，以感情确已破裂为判决标准｜全国人民代表大会｜2020｜{{URL}}｜strong
-[REF-003]｜官方法规｜《中华人民共和国民法典》第一千零八十七条：离婚时夫妻共同财产由双方协议处理，协议不成的按照照顾子女、女方和无过错方权益的原则判决｜全国人民代表大会｜2020｜{{URL}}｜strong
-[REF-004]｜官方法规｜《中华人民共和国民法典》第一千零八十四条：离婚后子女抚养以最有利于未成年子女为原则，不满两周岁的子女以由母亲直接抚养为原则｜全国人民代表大会｜2020｜{{URL}}｜strong
-[REF-005]｜官方法规｜《中华人民共和国民法典》第一千零八十五条：离婚后子女由一方直接抚养的，另一方应当负担部分或者全部抚养费｜全国人民代表大会｜2020｜{{URL}}｜strong
-[REF-006]｜官方法规｜《中华人民共和国民法典》第一千零八十八条：夫妻一方因抚育子女、照料老年人、协助另一方工作等负担较多义务的，离婚时可请求补偿｜全国人民代表大会｜2020｜{{URL}}｜strong
-[REF-007]｜官方法规｜《中华人民共和国民法典》第一千零九十二条：隐藏、转移、变卖、毁损、挥霍夫妻共同财产或伪造共同债务企图侵占的，分割时可以少分或不分｜全国人民代表大会｜2020｜{{URL}}｜strong
-[REF-008]｜学术文献｜Prospect Theory: An Analysis of Decision under Risk（前景理论 · 参照点依赖与损失厌恶）｜Kahneman & Tversky, Econometrica｜1979｜{{URL}}｜strong
-[REF-009]｜学术文献｜Affective Forecasting（情感预测偏差）｜Wilson & Gilbert, Advances in Experimental Social Psychology｜2003｜{{URL}}｜strong
-[REF-010]｜学术文献｜The Psychology of Sunk Cost（沉没成本谬误与承诺升级）｜Arkes & Blumer, Organizational Behavior and Human Decision Processes｜1985｜{{URL}}｜strong
-[REF-011]｜统计报告｜民政事业发展统计公报 · 离婚登记与冷静期相关数据（按年度发布，以最新一期为准）｜民政部｜{{URL}}｜辅助
-[REF-012]｜学术文献｜Working Identity: Unconventional Strategies for Reinventing Your Career（重大生活转型中的身份重构）｜Herminia Ibarra, Harvard Business School Press｜2003｜{{URL}}｜strong
-:::
-
-## 跨站跳转
-
-:::cross
-- [《高性价比人生指南》· 亲密关系 · 第 1 节](../HowToLiveBetter/?q=亲密关系&sec=1) — 先看清这段关系的问题在哪一层
-- [《高性价比人生指南》· 个人资产负债表](../HowToLiveBetter/?q=个人资产负债表&sec=1) — 离婚前先把共同资产与负债算清
-- [《高性价比人生指南》· 居住与城市](../HowToLiveBetter/?q=居住与城市&sec=1) — 居住地变更对学区与户籍的牵连
-- [本系列 · 要不要结婚](?q=结婚) — 当初建立的制度，如今如何退出
-- [本系列 · 要不要生孩子](?q=生孩子) — 若涉及子女，抚养账怎么重算
-- [返回《人生抉择参考手册》首页](../LifeChoices/)
+[REF-001]｜官方法规｜《中华人民共和国民法典》第一千零七十七条：协议离婚自婚姻登记机关收到申请之日起三十日内为冷静期，期满后双方共同申请发给离婚证｜全国人民代表大会｜2020｜strong
+[REF-002]｜官方法规｜《中华人民共和国民法典》第一千零七十九条：夫妻一方要求离婚的，可由有关组织调解或直接向人民法院提起离婚诉讼，以感情确已破裂为判决标准｜全国人民代表大会｜2020｜strong
+[REF-003]｜官方法规｜《中华人民共和国民法典》第一千零八十七条：离婚时夫妻共同财产由双方协议处理，协议不成的按照照顾子女、女方和无过错方权益的原则判决｜全国人民代表大会｜2020｜strong
+[REF-004]｜官方法规｜《中华人民共和国民法典》第一千零八十四条：离婚后子女抚养以最有利于未成年子女为原则，不满两周岁的子女以由母亲直接抚养为原则｜全国人民代表大会｜2020｜strong
+[REF-005]｜官方法规｜《中华人民共和国民法典》第一千零八十五条：离婚后子女由一方直接抚养的，另一方应当负担部分或者全部抚养费｜全国人民代表大会｜2020｜strong
+[REF-006]｜官方法规｜《中华人民共和国民法典》第一千零八十八条：夫妻一方因抚育子女、照料老年人、协助另一方工作等负担较多义务的，离婚时可请求补偿｜全国人民代表大会｜2020｜strong
+[REF-007]｜官方法规｜《中华人民共和国民法典》第一千零九十二条：隐藏、转移、变卖、毁损、挥霍夫妻共同财产或伪造共同债务企图侵占的，分割时可以少分或不分｜全国人民代表大会｜2020｜strong
+[REF-008]｜学术文献｜Prospect Theory: An Analysis of Decision under Risk（前景理论 · 参照点依赖与损失厌恶）｜Kahneman & Tversky, Econometrica｜1979｜strong
+[REF-009]｜学术文献｜Affective Forecasting（情感预测偏差）｜Wilson & Gilbert, Advances in Experimental Social Psychology｜2003｜strong
+[REF-010]｜学术文献｜The Psychology of Sunk Cost（沉没成本谬误与承诺升级）｜Arkes & Blumer, Organizational Behavior and Human Decision Processes｜1985｜strong
+[REF-011]｜统计报告｜民政事业发展统计公报 · 离婚登记与冷静期相关数据（按年度发布，以最新一期为准）｜民政部｜辅助
+[REF-012]｜学术文献｜Working Identity: Unconventional Strategies for Reinventing Your Career（重大生活转型中的身份重构）｜Herminia Ibarra, Harvard Business School Press｜2003｜strong
 :::
 
 :::meta
-主题词：离婚 ｜ 不可逆等级：高不可逆 ｜ 建议冷静期：90 天 ｜ 关联原版指南：HowToLiveBetter/?q=亲密关系&sec=1 ｜ 证据条目：12 条 ｜ 版本：v1.0（2026-10）
+主题词：离婚 ｜ 不可逆等级：高不可逆 ｜ 建议冷静期：90 天 ｜ 证据条目：12 条 ｜ 版本：v1.0（2026-10）
 :::

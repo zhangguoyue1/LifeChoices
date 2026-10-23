@@ -7,7 +7,7 @@ const eng = require("./assets/app.js");
 const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "data/index.json"), "utf8"));
 const EXPECT_H2 = ["概念祛魅", "两条路线：收益与代价盘点", "核心自检工具包", "高频思维陷阱黑名单",
   "非二元：分步折中方案库", "暂缓决策红灯判定", "适配人群参考", "兜底退出预案模板",
-  "脱敏真实案例库", "参考资料与证据索引", "跨站跳转"];
+  "脱敏真实案例库", "参考资料与证据索引"];
 
 let totalFail = 0;
 
@@ -34,7 +34,7 @@ for (const item of idx.items) {
 
   // h2 模块
   const h2s = r.toc.filter(t => t.level === 2).map(t => t.text);
-  if (h2s.length !== 11) errors.push("h2 = " + h2s.length);
+  if (h2s.length !== 10) errors.push("h2 = " + h2s.length);
   EXPECT_H2.forEach((t, i) => {
     if (h2s[i] !== t) errors.push("第" + (i + 1) + "模块异常: " + h2s[i]);
   });
@@ -45,14 +45,16 @@ for (const item of idx.items) {
   const checks = (r.html.match(/class="checklist"/g) || []).length;
   const refs = (r.html.match(/id="ref-\d+"/g) || []).length;
   const inlineRefs = (r.html.match(/class="ref"/g) || []).length;
-  const crossLinks = (r.html.match(/class="crossnav"/g) ? (r.html.match(/crossnav[\s\S]*?<\/div>/) || [""])[0].match(/<a /g) || [] : []).length;
 
   if (tables < 4) errors.push("表格 = " + tables);
   if (cases < 4) errors.push("案例卡 = " + cases);
   if (checks < 2) errors.push("清单 = " + checks);
   if (refs < 8) errors.push("证据条目 = " + refs);
   if (inlineRefs < 12) errors.push("内联引用 = " + inlineRefs);
-  if (crossLinks < 4) errors.push("跨站链接 = " + crossLinks);
+  // 下线项硬断言：跨站跳转与 URL 占位一律不得出现
+  if (/crossnav/.test(r.html)) errors.push("残留跨站跳转模块");
+  if (/\{\{URL\}\}/.test(fm.body)) errors.push("残留 {{URL}} 占位");
+  if (/HowToLiveBetter|高性价比/.test(fm.body)) errors.push("残留旧站引用");
 
   // 语法残留（查源文件而非渲染结果：渲染结果本身全是 HTML 标签）
   const srcTags = (fm.body.match(/<[a-zA-Z\/][^>\n]*>/g) || []).filter(function (t) {
@@ -62,12 +64,11 @@ for (const item of idx.items) {
   if (/:::[a-z]/.test(r.html)) errors.push("存在未解析容器指令");
   if (/@输入|@输出|@依据/.test(r.html)) errors.push("存在残留 @ 标记");
 
-  // 跨站链接的 q 是否都能在 index.json 中路由
+  // 站内链接的 q 是否都能在 index.json 中路由
   (fm.body.match(/\?q=[^)&\s"<>]+/g) || []).forEach(function (q) {
     var val = decodeURIComponent(q.slice(3));
-    if (val && !idx.items.some(function (it) { return it.q === val; }) &&
-        !/^职业收入管理$|^时间与注意力$|^个人资产负债表$|^亲密关系$|^居住与城市$|^健康管理$|^教育与自我投资$/.test(val)) {
-      errors.push("跨站链接 q 未登记: " + val);
+    if (val && !idx.items.some(function (it) { return it.q === val; })) {
+      errors.push("站内链接 q 未登记: " + val);
     }
   });
 
