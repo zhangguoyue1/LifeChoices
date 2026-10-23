@@ -1,0 +1,158 @@
+{
+  "site": "人生抉择参考手册",
+  "base": "LifeChoices/",
+  "sibling": "HowToLiveBetter/",
+  "updated": "2026-10-23",
+  "categories": [
+    {
+      "key": "亲密家庭抉择",
+      "desc": "涉及不可逆关系与长期共同责任"
+    },
+    {
+      "key": "事业城市抉择",
+      "desc": "涉及收入曲线、地理迁移与职业资历"
+    },
+    {
+      "key": "自我价值抉择",
+      "desc": "涉及身份认同、时间分配与自我定价"
+    },
+    {
+      "key": "健康取舍抉择",
+      "desc": "涉及身体本金的透支与偿还"
+    }
+  ],
+  "items": [
+    {
+      "q": "转行",
+      "slug": "zhuanxing",
+      "title": "要不要转行",
+      "summary": "先分清你讨厌的是任务、上级，还是行业本身；再用缓冲月数与技能迁移率，核算职业断层里那些三年后才浮出水面的隐性成本。",
+      "category": "事业城市抉择",
+      "risk": "半可逆",
+      "cooling_period": 30,
+      "status": "published",
+      "refs_count": 30
+    },
+    {
+      "q": "裸辞",
+      "slug": "luoci",
+      "title": "要不要裸辞",
+      "summary": "先分清\"想离开\"是情绪还是判断；再用空窗贴现率、社保断缴链与面试解释成本，核算裸辞和先找下家之间那道被低估的代价鸿沟。",
+      "category": "事业城市抉择",
+      "risk": "半可逆",
+      "cooling_period": 30,
+      "status": "published",
+      "refs_count": 48
+    },
+    {
+      "q": "考公",
+      "slug": "kaogong",
+      "title": "要不要考公考编",
+      "summary": "先分清你要的是稳定还是确定性；再用收入上限、地域绑定与调动难度折算稳定性的真实价格，并核算备考的沉没成本与年龄窗口。",
+      "category": "事业城市抉择",
+      "risk": "半可逆",
+      "cooling_period": 60,
+      "status": "published",
+      "refs_count": 43
+    },
+    {
+      "q": "留大城市还是回老家",
+      "slug": "chengshi",
+      "title": "留大城市还是回老家",
+      "summary": "先扣掉房租通勤时间成本再比两地收入；再用机会密度、回流可逆性衰减与人情网络的资产/负债属性，核算这条高不可逆决定的真实价格。",
+      "category": "事业城市抉择",
+      "risk": "高不可逆",
+      "cooling_period": 90,
+      "status": "published",
+      "refs_count": 44
+    },
+    {
+      "q": "买房",
+      "slug": "maifang",
+      "title": "要不要现在买房",
+      "summary": "先把居住需求、资产配置、婚育预期拆成三本账再谈；再核算月供收入比、持有成本清单，以及房子从挂牌到落袋的流动性折价。",
+      "category": "事业城市抉择",
+      "risk": "高不可逆",
+      "cooling_period": 90,
+      "status": "published",
+      "refs_count": 36
+    },
+    {
+      "q": "结婚",
+      "slug": "jiehun",
+      "title": "要不要结婚",
+      "summary": "先把\"感情质量\"与\"制度性后果\"彻底分开评估，再核算婚后财产制、共同债务、照护责任与住房资格的真实成本。",
+      "category": "亲密家庭抉择",
+      "risk": "高不可逆",
+      "cooling_period": 90,
+      "status": "published",
+      "refs_count": 46
+    },
+    {
+      "q": "生孩子",
+      "slug": "shengyu",
+      "title": "要不要生孩子",
+      "summary": "养育成本要拆成现金流支出、时间占用、职业惩罚三本账分别算，再直面生育窗口的硬约束与不可逆的真实含义。",
+      "category": "亲密家庭抉择",
+      "risk": "高不可逆",
+      "cooling_period": 90,
+      "status": "published",
+      "refs_count": 42
+    },
+    {
+      "q": "离婚",
+      "slug": "lihun",
+      "title": "要不要离婚",
+      "summary": "先把情绪判断与法律后果彻底分开评估，再核算冷静期、财产分割、子女抚养与家务补偿这四个机制的真实规则。",
+      "category": "亲密家庭抉择",
+      "risk": "高不可逆",
+      "cooling_period": 90,
+      "status": "published",
+      "refs_count": 66
+    },
+    {
+      "q": "辞职读研",
+      "slug": "duyan",
+      "title": "要不要辞职读研",
+      "summary": "先区分学历在你要进的行业里是\"定价要素\"还是\"敲门砖\"；再把 2–3 年机会成本折成工资损失、社保断缴、复出年资折价的现金账。",
+      "category": "自我价值抉择",
+      "risk": "半可逆",
+      "cooling_period": 60,
+      "status": "published",
+      "refs_count": 39
+    },
+    {
+      "q": "创业",
+      "slug": "chuangye",
+      "title": "要不要辞职创业",
+      "summary": "先用\"可承受亏损额\"反向定义项目规模，再分清收入替代型与故事驱动型；把创业资金和家庭生存资金物理隔离，并开业前写死退出路径。",
+      "category": "自我价值抉择",
+      "risk": "高不可逆",
+      "cooling_period": 90,
+      "status": "published",
+      "refs_count": 50
+    },
+    {
+      "q": "副业",
+      "slug": "fuye",
+      "title": "要不要做副业",
+      "summary": "先分清副业是\"积累可迁移资产\"还是\"用低质量忙碌掩盖主业问题\"；再算清主业被侵蚀的隐性成本，并核对竞业限制与兼职条款边界。",
+      "category": "自我价值抉择",
+      "risk": "可逆",
+      "cooling_period": 14,
+      "status": "published",
+      "refs_count": 55
+    },
+    {
+      "q": "用健康换收入",
+      "slug": "jiankang",
+      "title": "要不要用健康换收入",
+      "summary": "先把身体当作可折旧资产核算透支额度与偿还方式；再用扣掉健康损耗的真实时薪，比较短期冲刺与长期收入曲线，并设状态止损线。",
+      "category": "健康取舍抉择",
+      "risk": "高不可逆",
+      "cooling_period": 30,
+      "status": "published",
+      "refs_count": 29
+    }
+  ]
+}
