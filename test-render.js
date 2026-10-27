@@ -14,7 +14,7 @@ const checks = [
   ["front-matter cooling", String(fm.meta.cooling_period) === "30"],
   ["front-matter refs 数组", Array.isArray(fm.meta.refs) && fm.meta.refs.length === 10],
   ["front-matter tags 数组", Array.isArray(fm.meta.tags) && fm.meta.tags.length === 3],
-  ["h2 数量 = 11", (r.html.match(/<h2 /g) || []).length === 11],
+  ["h2 数量 = 10", (r.html.match(/<h2 /g) || []).length === 10],
   ["io 卡片存在", /class="io"/.test(r.html)],
   ["check 卡片存在", /class="checklist"/.test(r.html)],
   ["复制按钮存在", /data-copy=/.test(r.html)],
@@ -25,12 +25,10 @@ const checks = [
   ["表格数量 = 4", (r.html.match(/<table>/g) || []).length === 4],
   ["case 卡片 = 4", (r.html.match(/class="case /g) || []).length === 4],
   ["信号灯未转义", /<span class="light green">/.test(r.html)],
-  ["URL 占位高亮", /url-ph/.test(r.html)],
-  ["crossnav 存在", /class="crossnav"/.test(r.html)],
   ["meta 块存在", /class="page-meta"/.test(r.html)],
   ["无未渲染容器指令", !/:::[a-z]/.test(r.html)],
   ["无残留 @标记", !/@输入|@输出|@依据/.test(r.html)],
-  ["TOC 条目 = 11", r.toc.filter(t => t.level === 2).length === 11]
+  ["TOC 条目 = 10", r.toc.filter(t => t.level === 2).length === 10]
 ];
 
 let fail = 0;

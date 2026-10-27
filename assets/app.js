@@ -523,8 +523,16 @@
   function loadArticle(idx, q, sec) {
     var hit = (idx.items || []).filter(function (it) { return it.q === q || it.slug === q; })[0];
     if (!hit) {
-      showState("<b>暂无该专题</b>「" + esc(q) + "」还没有入库。<br>可回到首页查看已发布目录。" +
-        '<br><a href="' + BASE + '">返回首页</a>');
+      showState("<b>暂无该专题</b>「" + esc(q) + "」还没有入库。<br>可回到首页或全景图查看已发布目录。" +
+        '<br><a href="' + BASE + '">返回首页</a> · <a href="' + BASE + '?view=pano">看全景图</a>');
+      return;
+    }
+    if (hit.status === "planned") {
+      showState("<b>「" + esc(hit.title) + "」在写作队列中</b><br>" +
+        "该选题已列入 55 项全景图，正文尚未发布。想让它先写，或提供你的真实抉择经历（脱敏采纳、匿名署名），微信告诉编辑。" +
+        '<br><button class="wx-copy" data-copy="wozz8888">复制编辑微信 <b>wozz8888</b> 催更</button>' +
+        '<br><a href="' + BASE + '?view=pano">看 55 项全景图</a> · <a href="' + BASE + '">返回首页</a>');
+      bindCopy();
       return;
     }
     fetch(BASE + "data/" + hit.slug + ".md", { cache: "no-cache" })
@@ -558,7 +566,7 @@
 
   /* ---------------- 侧边栏：章节导航 + 筛选 ---------------- */
 
-  var state = { idx: null, filter: { risk: "all", cat: "all" }, currentQ: "" };
+  var state = { idx: null, filter: { risk: "all", cat: "all" }, currentQ: "", view: "" };
 
   function riskCls(risk) {
     return /高/.test(risk || "") ? "high" : /半/.test(risk || "") ? "half" : "low";
@@ -568,9 +576,10 @@
     var cls = riskCls(it.risk);
     var planned = it.status === "planned";
     return '<li><a href="' + BASE + "?q=" + encodeURIComponent(it.q) + '"' +
-      (state.currentQ === it.q ? ' class="active"' : "") + '>' +
+      (state.currentQ === it.q ? ' class="active"' : "") +
+      (planned ? ' class="planned"' : "") + '>' +
       '<span class="no">' + String(no).padStart(2, "0") + "</span>" +
-      '<span class="t">' + esc(it.title) + (planned ? "（筹备中）" : "") + "</span>" +
+      '<span class="t">' + esc(it.title) + (planned ? '<i class="queue-tag">筹备中</i>' : "") + "</span>" +
       '<span class="dot ' + cls + '" title="不可逆等级：' + esc(it.risk || "—") + '"></span>' +
       '<span class="chev">&gt;</span>' +
       "</a></li>";
@@ -592,10 +601,11 @@
     var cats = idx.categories || [];
     var vis = visibleItems();
     var f = state.filter;
+    var pub = items.filter(function (it) { return it.status !== "planned"; }).length;
 
     var count = document.getElementById("sideCount");
     if (count) count.textContent = f.risk === "all" && f.cat === "all"
-      ? "共 " + items.length + " 篇"
+      ? "已发布 " + pub + " / 共 " + items.length + " 项"
       : vis.length + " / " + items.length;
 
     // 侧栏章节列表
@@ -606,7 +616,9 @@
         if (f.cat !== "all" && c.key !== f.cat) return;
         var list = vis.filter(function (it) { return it.category === c.key; });
         if (!list.length) return;
-        html += '<div class="scat"><div class="scat-name">' + esc(c.key) + " · " + list.length + "</div>" +
+        var listPub = list.filter(function (it) { return it.status !== "planned"; }).length;
+        html += '<div class="scat"><div class="scat-name">' + esc(c.no + "、" + c.key) +
+          (listPub ? " · 已发布 " + listPub : "") + "</div>" +
           '<ul class="snav">' + list.map(function (it) {
             return itemLink(it, items.indexOf(it) + 1);
           }).join("") + "</ul></div>";
@@ -614,21 +626,26 @@
       host.innerHTML = html || '<div class="snav-empty">该筛选组合下暂无专题，试试放宽条件。</div>';
     }
 
-    // 首页目录联动
+    // 全景图入口高亮
+    var pano = document.getElementById("panoLink");
+    if (pano) pano.classList.toggle("active", state.view === "pano");
+
+    // 首页目录：只展示已发布
     var grid = document.getElementById("catGrid");
     if (grid && document.getElementById("home").style.display !== "none") {
+      var pubItems = vis.filter(function (it) { return it.status !== "planned"; });
       grid.innerHTML = cats.map(function (c) {
         if (f.cat !== "all" && c.key !== f.cat) return "";
-        var list = vis.filter(function (it) { return it.category === c.key; });
+        var list = pubItems.filter(function (it) { return it.category === c.key; });
         if (!list.length) return "";
         return '<div class="cat"><h3>' + esc(c.key) + "</h3><ul>" + list.map(function (it) {
           var cls = riskCls(it.risk);
-          var planned = it.status === "planned"
-            ? '<span class="risk planned">筹备中</span>' : "";
-          return '<li><a href="' + BASE + "?q=" + encodeURIComponent(it.q) + '">' + esc(it.title) + "</a>" + planned +
+          return '<li><a href="' + BASE + "?q=" + encodeURIComponent(it.q) + '">' + esc(it.title) + "</a>" +
             '<span class="risk ' + cls + '">' + esc(it.risk || "") + "</span></li>";
         }).join("") + "</ul></div>";
-      }).join("") || '<div class="cat" style="grid-column:1/-1;color:var(--ink-3);font-size:14px">该筛选组合下暂无专题。</div>';
+      }).join("") || '<div class="cat" style="grid-column:1/-1;color:var(--ink-3);font-size:14px">该筛选组合下暂无已发布专题。</div>';
+      var pc = document.getElementById("pubCount");
+      if (pc) pc.textContent = pubItems.length;
     }
   }
 
@@ -641,14 +658,24 @@
         applyFilter();
       });
     });
-    document.querySelectorAll("#catChips .chip").forEach(function (chip) {
-      chip.addEventListener("click", function () {
-        document.querySelectorAll("#catChips .chip").forEach(function (c) { c.classList.remove("active"); });
-        chip.classList.add("active");
-        state.filter.cat = chip.getAttribute("data-cat") || "all";
+    // 分类下拉：选项由 index.json 动态填充
+    var sel = document.getElementById("catSelect");
+    if (sel && !sel.dataset.filled && state.idx) {
+      sel.dataset.filled = "1";
+      (state.idx.categories || []).forEach(function (c) {
+        var o = document.createElement("option");
+        o.value = c.key;
+        o.textContent = c.no + "、" + c.key;
+        sel.appendChild(o);
+      });
+    }
+    if (sel && !sel.dataset.bound) {
+      sel.dataset.bound = "1";
+      sel.addEventListener("change", function () {
+        state.filter.cat = sel.value || "all";
         applyFilter();
       });
-    });
+    }
   }
 
   function bindMenu() {
@@ -667,6 +694,71 @@
     });
   }
 
+  /* ---------------- 全景图：11 领域 × 55 项 ---------------- */
+
+  function renderPano(idx) {
+    var items = idx.items || [];
+    var cats = idx.categories || [];
+    var pub = items.filter(function (it) { return it.status !== "planned"; }).length;
+    var host = document.getElementById("article");
+
+    var head = '<header class="article-head">' +
+      '<div class="article-meta-top">人生抉择参考手册 · 全景图</div>' +
+      "<h1>抉择全景图</h1>" +
+      '<p class="article-summary">11 个领域、55 项关键决策，按不可逆等级标注。已发布的直接读；' +
+      "写作队列中的选题，欢迎微信催更或提供你的真实经历。</p>" +
+      '<div class="badges">' +
+      '<span class="badge">总队列 <b>' + items.length + " 项</b></span>" +
+      '<span class="badge">已发布 <b>' + pub + " 篇</b></span>" +
+      '<span class="badge">写作队列 <b>' + (items.length - pub) + " 项</b></span>" +
+      '<span class="badge"><span class="light red">高不可逆</span> 建议冷静期 ≥ 90 天</span>' +
+      '<span class="badge"><span class="light amber">半可逆</span> 建议冷静期 30–60 天</span>' +
+      '<span class="badge"><span class="light green">可逆</span> 可直接小步试错</span>' +
+      "</div>" +
+      '<div class="warning"><b>阅读说明</b>本全景图只标注每项决策的真实两难与不可逆等级，不提供"选哪个"的结论。' +
+      "点击已发布条目的标题进入对应专题；未发布条目可在微信 <b>wozz8888</b> 催更或投稿你的真实案例。</div>" +
+      "</header>";
+
+    var body = cats.map(function (c) {
+      var list = items.filter(function (it) { return it.category === c.key; });
+      if (!list.length) return "";
+      var listPub = list.filter(function (it) { return it.status !== "planned"; }).length;
+      var rows = list.map(function (it) {
+        var cls = riskCls(it.risk);
+        var titleHtml = it.status === "planned"
+          ? '<span class="pano-title-planned">' + esc(it.title) + '<i class="queue-tag">筹备中</i></span>'
+          : '<a class="pano-title" href="' + BASE + "?q=" + encodeURIComponent(it.q) + '">' + esc(it.title) + "</a>";
+        var stateHtml = it.status === "planned"
+          ? '<span class="pano-state queue">队列中</span>'
+          : '<a class="pano-state pub" href="' + BASE + "?q=" + encodeURIComponent(it.q) + '">读这篇 →</a>';
+        return "<tr>" +
+          '<td class="pano-no">' + it.no + "</td>" +
+          "<td>" + titleHtml + "</td>" +
+          '<td class="pano-dilemma">' + esc(it.dilemma || "") + "</td>" +
+          '<td><span class="light ' + cls + '">' + esc(it.risk || "—") + "</span></td>" +
+          "<td>" + stateHtml + "</td>" +
+          "</tr>";
+      }).join("");
+      return '<section class="pano-cat">' +
+        '<h2 id="pano-' + list[0].no + '"><span class="h2num">' + esc(c.no) + "</span>" + esc(c.key) +
+        '<span class="pano-cat-meta">' + list.length + " 项 · 已发布 " + listPub + " 篇</span></h2>" +
+        '<p class="pano-cat-desc">' + esc(c.desc || "") + "</p>" +
+        '<div class="table-scroll"><table class="pano-table">' +
+        "<thead><tr><th>#</th><th>决策</th><th>难在哪</th><th>等级</th><th></th></tr></thead>" +
+        "<tbody>" + rows + "</tbody></table></div>" +
+        "</section>";
+    }).join("");
+
+    host.innerHTML = head + '<div class="md">' + body + "</div>" +
+      '<div class="end-feedback"><h4>催更 · 投稿 · 纠错</h4>' +
+      "<p>队列里的 43 项会按投票与素材成熟度陆续上线。想让某个选题先写、或提供你的真实抉择经历（脱敏），微信告诉编辑。</p>" +
+      '<button class="wx-copy" data-copy="wozz8888">复制编辑微信 <b>wozz8888</b></button></div>';
+    document.getElementById("home").style.display = "none";
+    host.style.display = "block";
+    document.title = "抉择全景图 · 55 项关键决策 · 人生抉择参考手册";
+    bindCopy(); bindRefs(); bindToTop();
+  }
+
   function loadHome() {
     applyFilter();
     bindToTop();
@@ -676,7 +768,9 @@
     var params = new URLSearchParams(location.search);
     var q = params.get("q");
     var sec = params.get("sec");
+    var view = params.get("view");
     state.currentQ = q || "";
+    state.view = view || "";
 
     document.querySelectorAll("[data-year]").forEach(function (el) {
       el.textContent = new Date().getFullYear();
@@ -690,8 +784,12 @@
       .then(function (r) { return r.json(); })
       .then(function (idx) {
         state.idx = idx;
+        bindChips();   // 索引就位后填充分类下拉
         applyFilter();
-        if (q) {
+        if (view === "pano") {
+          renderPano(idx);
+          bindToTop();
+        } else if (q) {
           document.getElementById("home").style.display = "none";
           loadArticle(idx, q, sec);
         } else {
@@ -704,6 +802,9 @@
         var grid = document.getElementById("catGrid");
         if (grid) grid.innerHTML = '<div class="cat" style="grid-column:1/-1">目录读取失败：请在本地起服务或用 Pages 打开。</div>';
         if (q) loadArticle({ items: [] }, q, sec);
+        if (view === "pano") {
+          showState("<b>全景图加载失败</b>目录数据读取失败，请刷新或通过本地服务打开。<br><a href=\"" + BASE + "\">返回首页</a>");
+        }
       });
   }
 

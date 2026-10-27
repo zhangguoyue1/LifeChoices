@@ -12,6 +12,8 @@ const EXPECT_H2 = ["概念祛魅", "两条路线：收益与代价盘点", "核�
 let totalFail = 0;
 
 for (const item of idx.items) {
+  // 筹备中条目尚无正文文件，跳过（仅校验已发布专题）
+  if (!item.slug || item.status !== "published") continue;
   const file = path.join(__dirname, "data", item.slug + ".md");
   const label = item.q + " (" + item.slug + ")";
   if (!fs.existsSync(file)) {

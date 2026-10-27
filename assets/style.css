@@ -985,6 +985,7 @@ a.ref.flash { background: var(--accent); color: #fff; }
 }
 .state b { display: block; color: var(--ink-2); font-size: 16px; margin-bottom: 8px; font-family: var(--font-serif); }
 .state a { margin-top: 16px; display: inline-block; }
+.state .wx-copy { margin-top: 14px; }
 
 /* 返回顶部 */
 .totop {
@@ -1006,6 +1007,136 @@ a.ref.flash { background: var(--accent); color: #fff; }
 }
 .totop.show { display: grid; }
 .totop:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ================= 全景图入口（侧栏） ================= */
+.pano-link {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.pano-link:hover { border-color: var(--accent); }
+.pano-link.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pano-link .pano-ico { color: var(--accent); font-size: 12px; }
+.pano-link.active .pano-ico { color: var(--paper-3); }
+.pano-link .t { flex: 1; min-width: 0; }
+.pano-link .chev { font-family: var(--font-mono); font-size: 11px; opacity: .55; }
+.pano-link.active .chev { color: var(--paper-3); }
+
+/* 分类下拉 */
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: "▾";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+#catSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 7px 26px 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  cursor: pointer;
+}
+#catSelect:hover { border-color: var(--accent-soft); }
+#catSelect:focus { outline: none; border-color: var(--accent); }
+
+/* 筹备中条目 */
+.snav a.planned { color: var(--ink-3); }
+.snav a.planned .no { opacity: .5; }
+.snav a.planned .dot { opacity: .35; }
+.queue-tag {
+  font-style: normal;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: .05em;
+  color: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 6px;
+  margin-left: 6px;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.pano-title-planned { color: var(--ink-3); }
+
+/* ================= 首页 hero CTA / more-link ================= */
+.hero-cta {
+  display: inline-block;
+  margin-top: 26px;
+  padding: 10px 20px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  transition: background .15s, color .15s;
+}
+.hero-cta:hover { background: var(--accent); color: var(--paper); border-bottom-color: var(--accent); }
+.more-link {
+  display: inline-block;
+  margin-top: 18px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: var(--accent);
+}
+
+/* ================= 全景图页 ================= */
+.pano-cat { margin: 44px 0 0; }
+.pano-cat h2 {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 21px;
+  margin: 0 0 6px;
+}
+.pano-cat-meta {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-3);
+  letter-spacing: .04em;
+}
+.pano-cat-desc {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+.pano-table { font-size: 13.5px; }
+.pano-table th { white-space: nowrap; }
+.pano-table td { vertical-align: top; line-height: 1.7; }
+.pano-no {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--accent-soft);
+  white-space: nowrap;
+}
+.pano-title { font-weight: 600; border-bottom: none; }
+.pano-title:hover { border-bottom: 1px solid var(--accent); }
+.pano-dilemma { color: var(--ink-2); font-size: 13px; }
+.pano-state { font-family: var(--font-sans); font-size: 12px; white-space: nowrap; }
+.pano-state.pub { color: var(--accent); font-weight: 600; }
+.pano-state.queue { color: var(--ink-3); }
 
 /* ================= 响应式 ================= */
 @media (max-width: 1080px) {
@@ -1052,7 +1183,7 @@ a.ref.flash { background: var(--accent); color: #fff; }
 }
 
 @media print {
-  .sidebar, .topbar, .totop, .copy-btn, .wx-copy, .wx-bar, .end-feedback, .comments, .side-mask { display: none; }
+  .sidebar, .topbar, .totop, .copy-btn, .wx-copy, .wx-bar, .end-feedback, .comments, .side-mask, .pano-link { display: none; }
   body { background: #fff; }
   a.ref { background: none; }
 }

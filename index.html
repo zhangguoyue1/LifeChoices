@@ -32,17 +32,16 @@
 
     <div class="side-group">
       <div class="side-label">抉择类别 <span class="side-hint">点选筛选</span></div>
-      <div class="chips" id="catChips">
-        <button class="chip active" data-cat="all">全部</button>
-        <button class="chip" data-cat="亲密家庭抉择">亲密家庭</button>
-        <button class="chip" data-cat="事业城市抉择">事业城市</button>
-        <button class="chip" data-cat="自我价值抉择">自我价值</button>
-        <button class="chip" data-cat="健康取舍抉择">健康取舍</button>
+      <div class="select-wrap">
+        <select id="catSelect" aria-label="按抉择类别筛选">
+          <option value="all">全部类别</option>
+        </select>
       </div>
     </div>
 
     <nav class="side-nav">
       <div class="side-label">章节 <span class="side-count" id="sideCount"></span></div>
+      <a class="pano-link" id="panoLink" href="?view=pano"><span class="pano-ico">◫</span><span class="t">抉择全景图 · 55 项</span><span class="chev">&gt;</span></a>
       <div id="sideNav"><div class="side-loading">目录加载中…</div></div>
     </nav>
 
@@ -80,6 +79,7 @@
               大多数人生建议的问题，不在于它错，而在于它不可证伪、也不可执行。<br>
               所以这里只写能算、能查、能用完就扔的东西。
             </div>
+            <a class="hero-cta" href="?view=pano">先看全景：11 个领域 · 55 项关键抉择 →</a>
           </section>
 
           <!-- 底层工具箱 -->
@@ -123,10 +123,11 @@
           <section class="home-section">
             <div class="sec-label">INDEX</div>
             <h2><span class="num">02</span>专题目录</h2>
-            <p>按抉择性质分类，每篇都标了不可逆等级 —— 等级越高，越值得读完再动。筛选请用左侧导航栏。</p>
+            <p>已发布 <b id="pubCount">12</b> 篇，按领域分组；每篇都标了不可逆等级——等级越高，越值得读完再动。完整 55 项抉择队列见 <a href="?view=pano">全景图</a>，筛选请用左侧导航栏。</p>
             <div class="cat-grid" id="catGrid">
               <div class="cat" style="grid-column:1/-1;color:var(--ink-3);font-size:14px">目录加载中…</div>
             </div>
+            <a class="more-link" href="?view=pano">还有 43 项在写作队列 —— 看 55 项全景图 →</a>
           </section>
 
           <!-- 使用说明 -->
