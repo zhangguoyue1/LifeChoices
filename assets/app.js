@@ -716,7 +716,7 @@
       '<span class="badge"><span class="light green">可逆</span> 可直接小步试错</span>' +
       "</div>" +
       '<div class="warning"><b>阅读说明</b>本全景图只标注每项决策的真实两难与不可逆等级，不提供"选哪个"的结论。' +
-      "点击已发布条目的标题进入对应专题；未发布条目可在微信 <b>wozz8888</b> 催更或投稿你的真实案例。</div>" +
+      "点击任意条目的标题进入对应专题；若你经历过其中的抉择，欢迎脱敏投稿你的真实案例，微信 <b>wozz8888</b> 告诉编辑。</div>" +
       "</header>";
 
     var body = cats.map(function (c) {
@@ -751,7 +751,7 @@
 
     host.innerHTML = head + '<div class="md">' + body + "</div>" +
       '<div class="end-feedback"><h4>催更 · 投稿 · 纠错</h4>' +
-      "<p>队列里的 43 项会按投票与素材成熟度陆续上线。想让某个选题先写、或提供你的真实抉择经历（脱敏），微信告诉编辑。</p>" +
+      "<p>全部 55 项抉择专题已上线。欢迎提供你的真实抉择经历（脱敏采纳、匿名署名），或指出某篇的疏漏，微信告诉编辑。</p>" +
       '<button class="wx-copy" data-copy="wozz8888">复制编辑微信 <b>wozz8888</b></button></div>';
     document.getElementById("home").style.display = "none";
     host.style.display = "block";
