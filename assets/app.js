@@ -292,19 +292,22 @@
     return "<blockquote>" + renderMarkdown(content).html + "</blockquote>";
   }
 
+  var IO_LABELS = { "输入": "先想清楚", "输出": "你会看清", "依据": "凭什么", "备注": "备注", "判断信号": "判断信号" };
+
   function renderIO(content) {
     var parts = content.split(/^@(输入|输出|依据|备注|判断信号)\s*$/m);
     var html = "";
     // parts[0] 是第一个标记前的内容
     if (parts[0].trim()) {
-      html += '<div class="in"><span class="k">输入</span>' + renderMarkdown(parts[0].trim()).html + "</div>";
+      html += '<div class="in"><span class="k">' + (IO_LABELS["输入"] || "先想清楚") + "</span>" + renderMarkdown(parts[0].trim()).html + "</div>";
     }
     for (var i = 1; i < parts.length; i += 2) {
       var label = parts[i];
       var body = (parts[i + 1] || "").trim();
       var cls = label === "输入" ? "in" : label === "输出" || label === "判断信号" ? "out" : "base";
+      var disp = IO_LABELS[label] || label;
       var bodyHtml = renderMarkdown(body).html;
-      html += '<div class="' + cls + '"><span class="k">' + label + "</span>" + bodyHtml + "</div>";
+      html += '<div class="' + cls + '"><span class="k">' + esc(disp) + "</span>" + bodyHtml + "</div>";
     }
     return '<div class="io">' + html + "</div>";
   }
@@ -321,6 +324,7 @@
 
   function renderCheck(args, content) {
     var lines = content.split(/\r?\n/).filter(function (l) { return l.trim(); });
+    var total = lines.length;
     var lis = lines.map(function (l) {
       var txt = l.trim().replace(/^[-*+]\s+(\[[ xX]\]\s+)?/, "");
       var m = txt.match(/^\[([ xX])\]\s+([\s\S]*)$/);
@@ -328,13 +332,11 @@
       if (m) txt = m[2];
       return '<li><input type="checkbox"' + (checked ? " checked" : "") + "><span>" + inline(txt) + "</span></li>";
     }).join("");
-    var plain = lines.map(function (l) {
-      return "□ " + l.trim().replace(/^[-*+]\s+(\[[ xX]\]\s+)?/, "");
-    }).join("\n");
-    return '<div class="checklist"><div class="checklist-head">' +
+    return '<div class="checklist" data-checklist>' +
+      '<div class="checklist-head">' +
       '<span class="checklist-title">' + esc(args || "自检清单") + "</span>" +
-      '<button class="copy-btn" data-copy="' + esc(plain) + '">复制清单</button></div>' +
-      "<ul>" + lis + "</ul></div>";
+      '<span class="check-count">已勾选 0 / ' + total + "</span>" +
+      "</div><ul>" + lis + "</ul></div>";
   }
 
   function renderRefs(content) {
@@ -452,9 +454,179 @@
     });
   }
 
+  /* ---------------- 交互式自检表 ---------------- */
+
+  // 从一段文本中解析所有「命中 N 条」档位（兼容：带/不带"命中"、带/不带"条"、
+  // 加粗 **、≥（可带空格）、以上、→ 箭头、单行多档以 。； 分隔）
+  function parseTierGlobal(text) {
+    var cleaned = String(text || "").replace(/\*\*/g, "");
+    var re = /(?:命中\s*)?(≥?\s*\d+)(?:[-–](\d+))?\s*条?\s*(?:以上)?\s*[：:→]\s*([^。；;\n]+)/g;
+    var out = [], m;
+    while ((m = re.exec(cleaned))) {
+      var raw = m[1].replace(/\s+/g, "").replace("≥", "");
+      var ge = m[1].indexOf("≥") >= 0 || /以上/.test(m[0]);
+      var min = parseInt(raw, 10);
+      var max = m[2] ? parseInt(m[2], 10) : (ge ? Infinity : min);
+      out.push({
+        min: min, max: max,
+        label: (ge ? "≥" + min : raw + (m[2] ? "–" + m[2] : "")) + " 条",
+        text: m[3].replace(/\*\*/g, "").trim()
+      });
+    }
+    return out;
+  }
+
+  // 从表格首列解析区间（"0–2 条" / "≥6 条"）
+  function parseRangeCell(txt) {
+    var m = String(txt || "").trim().match(/^(≥?\d+)(?:[–\-](\d+))?\s*条?$/);
+    if (!m) return null;
+    var ge = m[1].indexOf("≥") >= 0;
+    var min = parseInt(m[1].replace("≥", ""), 10);
+    var max = m[2] ? parseInt(m[2], 10) : (ge ? Infinity : min);
+    return {
+      min: min, max: max,
+      label: (ge ? "≥" + min : m[1].replace("≥", "") + (m[2] ? "–" + m[2] : "")) + " 条"
+    };
+  }
+
+  // 收集某清单之后【同小节内】的档位定义：优先用「命中红灯数」表格，否则解析后续兄弟节点的文本
+  // 边界：遇到下一个 h2（新小节）或下一个 .checklist 即停止，避免跨小节误抓
+  function collectTiers(cl) {
+    function stopAt(node) {
+      if (!node) return true;
+      if (node.tagName === "H2") return true;
+      if (node.classList && node.classList.contains("checklist")) return true;
+      return false;
+    }
+    function tableOf(node) {
+      if (node.tagName === "TABLE") return node;
+      if (node.querySelector) return node.querySelector("table");
+      return null;
+    }
+    var tiers = [];
+    // 1) 在后续兄弟节点中找档位表格（可能包在 .table-scroll 内）
+    var node = cl.nextElementSibling;
+    while (!stopAt(node)) {
+      var tbl = tableOf(node);
+      if (tbl) {
+        tbl.querySelectorAll("tr").forEach(function (tr) {
+          var cells = tr.querySelectorAll("td");
+          if (cells.length >= 2) {
+            var r = parseRangeCell(cells[0].textContent);
+            if (r) tiers.push({
+              min: r.min, max: r.max, label: r.label,
+              text: cells[1].textContent.replace(/\*\*/g, "").trim()
+            });
+          }
+        });
+        if (tiers.length) return tiers;
+      }
+      node = node.nextElementSibling;
+    }
+    // 2) 否则收集后续兄弟节点文本，全局解析"命中 N 条"（兼容多种写法、单行多档）
+    var text = "";
+    node = cl.nextElementSibling;
+    while (!stopAt(node)) {
+      text += "\n" + (node.textContent || "");
+      node = node.nextElementSibling;
+    }
+    return parseTierGlobal(text);
+  }
+
+  function countChecked(scope) {
+    var n = 0, total = 0;
+    scope.querySelectorAll('input[type="checkbox"]').forEach(function (b) {
+      total++; if (b.checked) n++;
+    });
+    return { n: n, total: total };
+  }
+
+  function updateCount(cl) {
+    var c = cl.querySelector(".check-count");
+    if (!c) return;
+    var r = countChecked(cl);
+    c.textContent = "已勾选 " + r.n + " / " + r.total;
+  }
+
+  function updateTier(cl) {
+    if (!cl._tiers || !cl._tiers.length) return;
+    var r = countChecked(cl);
+    var panel = cl.querySelector(".tier-verdict");
+    if (!panel) return;
+    var matched = -1;
+    cl._tiers.forEach(function (t, i) {
+      var on = r.n >= t.min && r.n <= t.max;
+      if (on) matched = i;
+      if (panel.children[i]) panel.children[i].classList.toggle("on", on);
+    });
+    var hint = panel.querySelector(".tier-hint");
+    if (hint) hint.textContent = "你已勾选 " + r.n + " 项 → " +
+      (matched >= 0 ? "命中：" + cl._tiers[matched].label : "（尚未命中任何档）");
+  }
+
+  function updateVerdict() {
+    var article = document.getElementById("article");
+    var body = document.getElementById("verdictBody");
+    if (!article || !body) return;
+    var r = countChecked(article.querySelector(".md") || article);
+    if (r.n === 0) {
+      body.textContent = "还没勾选。翻开本页，把符合你情况的项勾上，这里会汇总你的选择并给出下一步建议。";
+      return;
+    }
+    var tierText = "";
+    article.querySelectorAll(".checklist[data-checklist]").forEach(function (cl) {
+      if (cl._tiers && cl._tiers.length) {
+        var rr = countChecked(cl);
+        // 仅当该清单（红灯判定）本身被勾选过，才纳入结论，避免"0 项即命中 0–2 档"的误报
+        if (rr.n >= 1) cl._tiers.forEach(function (t) { if (rr.n >= t.min && rr.n <= t.max) tierText = t.text; });
+      }
+    });
+    var s = "你在本篇共勾选了 " + r.n + " 项自检。";
+    if (tierText) s += "红灯判定命中：" + tierText + "。";
+    s += "结合本篇不可逆等级与建议冷静期，先按小结推进；涉及法律 / 医疗 / 金融，请咨询执业专业人士。";
+    body.textContent = s;
+  }
+
+  function bindWorksheet() {
+    var article = document.getElementById("article");
+    if (!article) return;
+    article.querySelectorAll(".checklist[data-checklist]").forEach(function (cl) {
+      var tiers = collectTiers(cl);
+      if (tiers.length) {
+        cl._tiers = tiers;
+        var panel = document.createElement("div");
+        panel.className = "tier-verdict";
+        panel.innerHTML =
+          '<div class="tier-hint">勾选后这里显示你的判定档</div>' +
+          tiers.map(function (t) {
+            return '<div class="tier"><span class="tier-label">' + esc(t.label) + '</span>' +
+              '<span class="tier-text">' + inline(t.text) + "</span></div>";
+          }).join("");
+        cl.appendChild(panel);
+        updateTier(cl);
+      }
+      cl.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+        cb.addEventListener("change", function () {
+          updateCount(cl); updateTier(cl); updateVerdict();
+        });
+      });
+      updateCount(cl);
+    });
+  }
+
   /* ---------------- 页面渲染 ---------------- */
 
-  function renderArticleShell(meta, html, toc) {
+  function extractRedLightChecks(body) {
+    var m = (body || "").match(/##\s*暂缓决策红灯判定[\s\S]*?(:::check[\s\S]*?:::)/);
+    if (!m) return [];
+    return m[1].split(/\r?\n/).filter(function (l) {
+      return /^[-*+]\s+(?:\[[ xX]\]\s*)?\S/.test(l);
+    }).slice(0, 3).map(function (l) {
+      return l.replace(/^[-*+]\s+(?:\[[ xX]\]\s*)?/, "").trim();
+    });
+  }
+
+  function renderArticleShell(meta, html, toc, body) {
     var risk = meta.risk_level || "—";
     var riskCls = /高/.test(risk) ? "high" : /半/.test(risk) ? "half" : "low";
     var tags = Array.isArray(meta.tags) ? meta.tags : (meta.tags ? [meta.tags] : []);
@@ -466,6 +638,27 @@
         }).join("") + "</ol></nav>"
       : "";
 
+    var tldrChecks = extractRedLightChecks(body);
+    var tldrHtml =
+      '<div class="tldr">' +
+        '<div class="tldr-head">30 秒速览</div>' +
+        '<p class="tldr-concl">' + esc(meta.summary || "") + "</p>" +
+        '<div class="tldr-meta">' +
+          '<span class="badge">不可逆 <b class="risk-' + riskCls + '">' + esc(risk) + "</b></span>" +
+          '<span class="badge">冷静期 <b>' + esc(meta.cooling_period || "—") + " 天</b></span>" +
+          '<span class="badge">证据 <b>' + (Array.isArray(meta.refs) ? meta.refs.length : 0) + " 条</b></span>" +
+        "</div>" +
+        (tldrChecks.length ? '<div class="tldr-checks"><span class="tldr-checks-label">翻开先勾这 3 条：</span><ul>' +
+          tldrChecks.map(function (t) { return "<li>" + inline(t) + "</li>"; }).join("") + "</ul></div>" : "") +
+        '<p class="tldr-cta">本页自检表可交互：勾选后底部会<b>自动生成你的决策小结</b>。</p>' +
+      "</div>";
+
+    var verdictHtml =
+      '<div class="verdict" id="verdict">' +
+        '<div class="verdict-head">你的决策小结 <span class="verdict-hint">（勾选下方任意自检项后自动生成）</span></div>' +
+        '<div class="verdict-body" id="verdictBody">还没勾选。翻开本页，把符合你情况的项勾上，这里会汇总你的选择并给出下一步建议。</div>' +
+      "</div>";
+
     return '<header class="article-head">' +
       '<div class="article-meta-top">人生抉择参考手册 · ' + esc(meta.q || "") + "</div>" +
       "<h1>" + esc(meta.title || "") + "</h1>" +
@@ -476,10 +669,11 @@
         '<span class="badge">证据条目 <b>' + (Array.isArray(meta.refs) ? meta.refs.length : 0) + " 条</b></span>" +
         tags.map(function (t) { return '<span class="badge">' + esc(t) + "</span>"; }).join("") +
       "</div>" +
-      '<div class="warning"><b>前置声明</b>本内容仅为决策思考工具，不构成法律、医疗、金融、婚恋最终决策；高不可逆事项建议配套专业人士咨询。文中不提供"选 A 还是选 B"的结论，只交付框架、清单与成本核算方法。</div>' +
       tocHtml +
       "</header>" +
+      tldrHtml +
       '<div class="md">' + html + "</div>" +
+      verdictHtml +
       '<div class="end-feedback"><h4>提问 · 纠错 · 投稿</h4>' +
       "<p>读完这篇，如果你有真实抉择经历、发现某条证据过时，或认为框架漏了关键变量——微信告诉编辑。" +
       "有价值的问题与纠错会被选择性纳入本篇下一版本，默认匿名。</p>" +
@@ -545,11 +739,12 @@
             var meta = Object.assign({}, hit, fm.meta);
             var r = renderMarkdown(fm.body);
             var host = document.getElementById("article");
-            host.innerHTML = renderArticleShell(meta, r.html, r.toc);
+            host.innerHTML = renderArticleShell(meta, r.html, r.toc, fm.body);
             document.getElementById("home").style.display = "none";
             host.style.display = "block";
             document.title = (meta.title || "人生抉择") + " · 人生抉择参考手册";
             bindCopy(); bindTasks(); bindRefs(); bindToTop();
+            bindWorksheet();
             mountComments();
             if (sec) {
               var el = document.getElementById(/^\d+$/.test(sec) ? "sec-" + sec : sec);
